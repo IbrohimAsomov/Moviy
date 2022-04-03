@@ -22,6 +22,29 @@ let normolizedMovieList = slicedMovies.map(function (item, index) {
         movie_info : item.summary,
         movie_rating : item.imdb_rating,
         movie_img : `http://img.youtube.com/vi/${item.ytid}mqdefault.jpg`,
-        movie_youtube : `https://www.youtube.com/watch?v=${item.ytid}`
-    }
+        movie_youtube : `https://www.youtube.com/watch?v=${item.ytid}`,
+    }    
 })
+
+
+function renderMovies(array, wrapper) {
+    
+    let movieFragment = document.createDocumentFragment()
+    
+    array.forEach(function (item) {
+        let cardTemplate = elTemplate.cloneNode(true)
+        
+        cardTemplate.querySelector(".card-img-top").src = item.movie_img;
+        cardTemplate.querySelector(".card-title").textContent = item.movie_title;
+        cardTemplate.querySelector(".card-categories").textContent = item.movie_categories.split("|").join(", ");
+        cardTemplate.querySelector(".card-year").textContent = item.movie_year;
+        cardTemplate.querySelector(".card-rate").textContent = item.movie_rating;
+        cardTemplate.querySelector(".card-link").href = item.movie_youtube;
+        
+        movieFragment.appendChild(cardTemplate)
+    });
+    
+    wrapper.appendChild(movieFragment)
+}
+
+renderMovies(normolizedMovieList, elWrapper)
