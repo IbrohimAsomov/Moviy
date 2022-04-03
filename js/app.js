@@ -9,42 +9,105 @@ let elBtn = document.querySelector("#btn");
 let elTitle = document.querySelector("#search-result");
 let elTemplate = document.querySelector("#movie_card").content;
 
-// Get movies list
-let slicedMovies = movies.slice(0, 10);
+// Get movies list 
+let slicedMovies = movies.slice(0, 100);
 
-let normolizedMovieList = slicedMovies.map(function (item, index) {
-    
+var normolizedMovieList = slicedMovies.map((movieItem, index) => {
     return {
-        movie_id : ++index,
-        movie_title : item.Title.toString(),
-        movie_year : item.movie_year,
-        movie_categories : item.Categories,
-        movie_info : item.summary,
-        movie_rating : item.imdb_rating,
-        movie_img : `http://img.youtube.com/vi/${item.ytid}mqdefault.jpg`,
-        movie_youtube : `https://www.youtube.com/watch?v=${item.ytid}`,
-    }    
+        id: ++index,
+        title: movieItem.Title.toString(),
+        categories: movieItem.Categories,
+        rating: movieItem.imdb_rating,
+        year: movieItem.movie_year,
+        imageLink: `https://i.ytimg.com/vi/${movieItem.ytid}/mqdefault.jpg`,
+        youtubeLink: `https://www.youtube.com/watch?v=${movieItem.ytid}`  
+    }
 })
 
 
-function renderMovies(array, wrapper) {
+// Create categories
+function generateCategories(movieArray) {
+    let categoryList = []
     
-    let movieFragment = document.createDocumentFragment()
+    movieArray.forEach(function(item) {
+        let splittedCategories = item.categories.split("|");
+        
+        splittedCategories.forEach(function (item) {
+            if (!categoryList.includes(item)) {
+                categoryList.push(item)
+            }
+        })
+    })
+
+    categoryList.sort()
     
-    array.forEach(function (item) {
-        let cardTemplate = elTemplate.cloneNode(true)
+    let categoryFragment = document.createDocumentFragment()
+
+    categoryList.forEach(function (item) {
+        let categoryOption = document.createElement("option");
+        categoryOption.value = item
+        categoryOption.textContent = item
+        categoryFragment.appendChild(categoryOption)
+    })
+   
+    elCategorySelect.appendChild(categoryFragment)
+}
+generateCategories(normolizedMovieList)
+
+
+// Create render function
+function renderMovies(movieArray, wrapper){
+    wrapper.innerHTML = null;
+    let elFragment = document.createDocumentFragment()
+    
+    movieArray.forEach(movie => {
+        let templateDiv = elTemplate.cloneNode(true)
         
-        cardTemplate.querySelector(".card-img-top").src = item.movie_img;
-        cardTemplate.querySelector(".card-title").textContent = item.movie_title;
-        cardTemplate.querySelector(".card-categories").textContent = item.movie_categories.split("|").join(", ");
-        cardTemplate.querySelector(".card-year").textContent = item.movie_year;
-        cardTemplate.querySelector(".card-rate").textContent = item.movie_rating;
-        cardTemplate.querySelector(".card-link").href = item.movie_youtube;
+        templateDiv.querySelector(".card-img-top").src = movie.imageLink
+        templateDiv.querySelector(".card-title").textContent = movie.title
+        templateDiv.querySelector(".card-categories").textContent = movie.categories.split("|").join(", ")
+        templateDiv.querySelector(".card-year").textContent = movie.year
+        templateDiv.querySelector(".card-rate").textContent = movie.rating
+        templateDiv.querySelector(".card-link").href = movie.youtubeLink
         
-        movieFragment.appendChild(cardTemplate)
+        elFragment.appendChild(templateDiv);
     });
+    wrapper.appendChild(elFragment)
     
-    wrapper.appendChild(movieFragment)
+    elTitle.textContent = movieArray.length;
 }
 
-renderMovies(normolizedMovieList, elWrapper)
+renderMovies(normolizedMovieList, elWrapper);
+
+
+var findMovies = function (movie_title, minRating, genre) {
+    
+    return normolizedMovieList.filter(function (movie) {
+        var doesMatchCategory = genre === 'All' || movie.categories.split("|").includes(genre);
+        
+        return movie.title.match(movie_title) && movie.rating >= minRating && doesMatchCategory;
+    });
+};
+
+
+elForm.addEventListener("input", function(evt) {
+    evt.preventDefault()
+
+    let searchInput = elSearchInput.value.trim()
+    let ratingInput = elRating.value.trim()
+    let selectOption = elCategorySelect.value
+    let sortingType = elSort.value
+    
+    let pattern = new RegExp(searchInput, "gi")
+    let resultArray = findMovies(pattern, ratingInput, selectOption)
+
+    if (sortingType === "high") {
+        resultArray.sort((b, a) => a.rating - b.rating)
+    }
+
+    if (sortingType === "low") {
+        resultArray.sort((a, b) => a.rating - b.rating)
+    }
+
+    renderMovies(resultArray , elWrapper);
+})
