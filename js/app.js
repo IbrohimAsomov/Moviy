@@ -69,7 +69,7 @@ function renderMovies(movieArray, wrapper){
         templateDiv.querySelector(".card-year").textContent = movie.year
         templateDiv.querySelector(".card-rate").textContent = movie.rating
         templateDiv.querySelector(".card-link").href = movie.youtubeLink
-        templateDiv.querySelector(".bookmark-btn").dataset.movieId = movie.id
+        templateDiv.querySelector(".bookmark-btn").dataset.movieItemId = movie.id
         
         elFragment.appendChild(templateDiv);
     });
@@ -113,4 +113,5 @@ elForm.addEventListener("input", function(evt) {
     renderMovies(resultArray , elWrapper);
 })
 
-
+elWrapper.addEventListener("click", (item) => {
+})
